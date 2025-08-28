@@ -31,14 +31,25 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 
 1. In your Azure Web App, go to **Overview** → **Get publish profile**
 2. Download the `.publishsettings` file
-3. Open the file and copy the `publishUrl`, `userName`, and `userPWD` values
+3. **Important**: Copy the **entire content** of the `.publishsettings` file (not just individual values)
+4. This file contains XML content that looks like this:
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <publishData>
+     <publishProfile profileName="your-webapp-name" publishMethod="MSDeploy" publishUrl="your-webapp-name.scm.azurewebsites.net:443" userName="$your-webapp-name" userPWD="password-here" destinationAppUrl="https://your-webapp-name.azurewebsites.net" />
+   </publishData>
+   ```
+5. You'll use this entire content in the next step
 
 ### 3. Configure GitHub Secrets
 
 1. Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**
-2. Add the following secret:
+2. Click **New repository secret**
+3. Add the following secret:
    - **Name**: `AZURE_WEBAPP_PUBLISH_PROFILE`
-   - **Value**: Paste the entire content of the `.publishsettings` file
+   - **Value**: Paste the **entire XML content** from the `.publishsettings` file you downloaded
+4. Click **Add secret**
+5. **Note**: The secret value should start with `<?xml version="1.0"` and contain the complete publish profile XML
 
 ### 4. Update Workflow Configuration
 
@@ -97,8 +108,12 @@ dotnet test
 ### Common Issues
 
 1. **Build failures**: Ensure .NET 8.0 SDK is installed
-2. **Deployment failures**: Verify the publish profile secret is correctly set
+2. **Deployment failures**: 
+   - Verify the publish profile secret is correctly set
+   - Ensure you copied the **entire XML content**, not just individual values
+   - Check that the secret name is exactly `AZURE_WEBAPP_PUBLISH_PROFILE`
 3. **Azure authentication**: Check that the publish profile has the correct permissions
+4. **Publish profile format**: The secret should contain the complete XML file content, starting with `<?xml version="1.0"`
 
 ### Workflow Logs
 
