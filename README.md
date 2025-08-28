@@ -18,7 +18,54 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 
 ## Setup Instructions
 
-### 1. Create Azure Web App
+You have two options for setting up Azure resources:
+
+### **Option A: Automated Setup (Recommended)**
+Use the PowerShell script for quick, automated Azure resource creation.
+- **Best for**: Developers who want fast setup, have Azure CLI installed
+- **Time**: ~5-10 minutes
+- **Requirements**: Azure CLI, PowerShell, Azure permissions
+
+### **Option B: Manual Setup**
+Follow the step-by-step instructions to create resources manually in Azure Portal.
+- **Best for**: Learning Azure, troubleshooting, or when PowerShell isn't available
+- **Time**: ~15-20 minutes
+- **Requirements**: Azure Portal access, Azure permissions
+
+---
+
+### **Option A: Automated Setup with PowerShell Script**
+
+**Prerequisites:**
+- Azure CLI installed ([Download here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli))
+- Logged in to Azure (`az login`)
+- Active Azure subscription
+
+**Steps:**
+1. **Run the setup script:**
+   ```powershell
+   .\setup-azure-deployment.ps1
+   ```
+   
+   Or with parameters:
+   ```powershell
+   .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg"
+   ```
+
+2. **The script will:**
+   - Create Resource Group
+   - Create App Service Plan
+   - Create Azure Web App
+   - Download publish profile
+   - Save it as `publish-profile.xml`
+
+3. **After script completion:**
+   - Copy content from `publish-profile.xml`
+   - Continue with [Configure GitHub Secrets](#4-configure-github-secrets)
+
+---
+
+### **Option B: Manual Setup**
 
 1. Go to the [Azure Portal](https://portal.azure.com)
 2. Create a new Web App with the following settings:
