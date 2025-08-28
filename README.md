@@ -65,7 +65,17 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
      - Select **all content** (Ctrl+A) and copy it (Ctrl+C)
      - The content should start with `<?xml version="1.0"` and contain the complete publish profile XML
      - **Important**: Copy the entire XML content, not just individual values
-   - **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
+
+4. **Configure GitHub Secrets:**
+   - Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**
+   - Click **New repository secret**
+   - Add the following secret:
+     - **Name**: `AZURE_WEBAPP_PUBLISH_PROFILE`
+     - **Value**: Paste the **entire XML content** from the `publish-profile.xml` file you copied
+   - Click **Add secret**
+   - **Note**: The secret value should start with `<?xml version="1.0"` and contain the complete publish profile XML
+
+5. **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
 
 ---
 
