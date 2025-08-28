@@ -60,7 +60,11 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
    - Save it as `publish-profile.xml`
 
 3. **After script completion:**
-   - Copy content from `publish-profile.xml`
+   - **Copy the entire content** from `publish-profile.xml` file:
+     - Open the `publish-profile.xml` file in any text editor (Notepad, VS Code, etc.)
+     - Select **all content** (Ctrl+A) and copy it (Ctrl+C)
+     - The content should start with `<?xml version="1.0"` and contain the complete publish profile XML
+     - **Important**: Copy the entire XML content, not just individual values
    - **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
 
 ---
