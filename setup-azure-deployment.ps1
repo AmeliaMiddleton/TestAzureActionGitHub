@@ -91,9 +91,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Step 5: Create App Service Plan
-# App Service Plans define the compute resources and pricing tier for your web apps
+# App Service Plans define the compute resources and pricing tier for your web apps (Windows for .NET)
 Write-Host "🔧 Creating App Service Plan..." -ForegroundColor Yellow
-az appservice plan create --name "$WebAppName-plan" --resource-group $ResourceGroupName --location $Location --sku B1 --is-linux
+az appservice plan create --name "$WebAppName-plan" --resource-group $ResourceGroupName --location $Location --sku B1
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to create App Service Plan" -ForegroundColor Red
@@ -136,8 +136,8 @@ Write-Host "Your Azure Web App has been created successfully!" -ForegroundColor 
 # Provide clear next steps for the user to complete the setup
 Write-Host "`nNext steps:" -ForegroundColor Cyan
 Write-Host "1. Copy the content of publish-profile.xml" -ForegroundColor White
-Write-Host "2. Go to your GitHub repository → Settings → Secrets → Actions" -ForegroundColor White
-Write-Host "3. Add a new secret named 'AZURE_WEBAPP_PUBLISH_PROFILE'" -ForegroundColor White
+Write-Host "2. Go to your GitHub repository - Settings - Secrets - Actions" -ForegroundColor White
+Write-Host "3. Add a new secret named AZURE_WEBAPP_PUBLISH_PROFILE" -ForegroundColor White
 Write-Host "4. Paste the publish profile content as the value" -ForegroundColor White
 Write-Host "5. Update the workflow files with your Web App name: $WebAppName" -ForegroundColor White
 Write-Host "6. Push your changes to trigger the deployment!" -ForegroundColor White
