@@ -27,11 +27,10 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
    - **Region**: Choose your preferred region
    - **App Service Plan**: Create new or use existing
 
-### 2. Get Publish Profile
+### 2. Enable Publishing Credentials
 
 **Prerequisites**: 
 - Ensure you have **Contributor** or **Owner** permissions on the Azure Web App resource
-- Enable **Publishing credentials** in your Azure Web App settings
 
 **Enable Publishing Credentials:**
 1. Go to your Azure Web App → **Configuration** → **General settings**
@@ -39,10 +38,11 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 3. **Note**: Do NOT enable "FTP Basic Auth Publishing Credentials" - that's a different setting for FTP deployment
 4. Click **Save** to apply the changes
 
-**Get the Publish Profile:**
+### 3. Get Publish Profile
+
 1. In your Azure Web App, go to **Overview** → **Get publish profile**
 2. Download the file (it will be named `your-app-name.publishsettings`)
-3. **Important**: Copy the **entire content** of the `.publishsettings` file (not just individual values)
+3. **Important**: Copy the **entire content** of the `your-app-name.publishsettings` file (not just individual values)
 4. This file contains XML content that looks like this:
    ```xml
    <?xml version="1.0" encoding="utf-8"?>
@@ -54,7 +54,7 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 
 **Note**: If you can't see the "Get publish profile" button or get an access denied error, ensure publishing credentials are enabled and contact your Azure administrator if you need permission changes.
 
-### 3. Configure GitHub Secrets
+### 4. Configure GitHub Secrets
 
 1. Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**
 2. Click **New repository secret**
@@ -64,7 +64,7 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 4. Click **Add secret**
 5. **Note**: The secret value should start with `<?xml version="1.0"` and contain the complete publish profile XML
 
-### 4. Update Workflow Configuration
+### 5. Update Workflow Configuration
 
 1. Edit `.github/workflows/azure-deploy.yml`
 2. Change `AZURE_WEBAPP_NAME` to match your Azure Web App name:
@@ -73,7 +73,7 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
      AZURE_WEBAPP_NAME: your-actual-webapp-name
    ```
 
-### 5. Push to Main Branch
+### 6. Push to Main Branch
 
 The workflow will automatically trigger when you push to the `main` or `master` branch.
 
@@ -126,7 +126,7 @@ dotnet test
    - Ensure you copied the **entire XML content**, not just individual values
    - Check that the secret name is exactly `AZURE_WEBAPP_PUBLISH_PROFILE`
 3. **Azure authentication**: Check that the publish profile has the correct permissions
-4. **Publish profile format**: The secret should contain the complete XML file content, starting with `<?xml version="1.0"`
+4. **Publish profile format**: The secret should contain the complete XML file content from your `your-app-name.publishsettings` file, starting with `<?xml version="1.0"`
 5. **Access denied errors**: Ensure you have **Contributor** or **Owner** permissions on the Azure Web App resource
 6. **Missing publish profile button**: Check your Azure role assignments and contact your administrator if needed
 
