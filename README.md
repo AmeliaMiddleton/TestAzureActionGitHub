@@ -29,8 +29,19 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 
 ### 2. Get Publish Profile
 
+**Prerequisites**: 
+- Ensure you have **Contributor** or **Owner** permissions on the Azure Web App resource
+- Enable **Publishing credentials** in your Azure Web App settings
+
+**Enable Publishing Credentials:**
+1. Go to your Azure Web App → **Configuration** → **General settings**
+2. Set **SCM Basic Auth Publishing Credentials** to **On** (this is the setting that allows downloading publish profiles)
+3. **Note**: Do NOT enable "FTP Basic Auth Publishing Credentials" - that's a different setting for FTP deployment
+4. Click **Save** to apply the changes
+
+**Get the Publish Profile:**
 1. In your Azure Web App, go to **Overview** → **Get publish profile**
-2. Download the `.publishsettings` file
+2. Download the file (it will be named `your-app-name.publishsettings`)
 3. **Important**: Copy the **entire content** of the `.publishsettings` file (not just individual values)
 4. This file contains XML content that looks like this:
    ```xml
@@ -40,6 +51,8 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
    </publishData>
    ```
 5. You'll use this entire content in the next step
+
+**Note**: If you can't see the "Get publish profile" button or get an access denied error, ensure publishing credentials are enabled and contact your Azure administrator if you need permission changes.
 
 ### 3. Configure GitHub Secrets
 
@@ -114,6 +127,8 @@ dotnet test
    - Check that the secret name is exactly `AZURE_WEBAPP_PUBLISH_PROFILE`
 3. **Azure authentication**: Check that the publish profile has the correct permissions
 4. **Publish profile format**: The secret should contain the complete XML file content, starting with `<?xml version="1.0"`
+5. **Access denied errors**: Ensure you have **Contributor** or **Owner** permissions on the Azure Web App resource
+6. **Missing publish profile button**: Check your Azure role assignments and contact your administrator if needed
 
 ### Workflow Logs
 
