@@ -60,7 +60,7 @@ A .NET 8.0 Blazor application with automated deployment to Azure Web App using G
 2. Click **New repository secret**
 3. Add the following secret:
    - **Name**: `AZURE_WEBAPP_PUBLISH_PROFILE`
-   - **Value**: Paste the **entire XML content** from the `.publishsettings` file you downloaded
+   - **Value**: Paste the **entire XML content** from the `your-app-name.publishsettings` file you downloaded
 4. Click **Add secret**
 5. **Note**: The secret value should start with `<?xml version="1.0"` and contain the complete publish profile XML
 
