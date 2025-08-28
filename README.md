@@ -61,7 +61,7 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
 
 3. **After script completion:**
    - Copy content from `publish-profile.xml`
-   - **Continue with manual steps below** (the script only creates Azure resources)
+   - **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
 
 ---
 
