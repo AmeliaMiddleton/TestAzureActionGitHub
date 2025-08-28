@@ -1,46 +1,75 @@
+# This workflow automatically builds and deploys your .NET Blazor application to Azure Web App
+# It triggers on pushes to main/master branches, pull requests, and manual dispatch
 name: Deploy to Azure Web App
 
+# Define when this workflow should run
 on:
+  # Trigger on push to main or master branch (production deployments)
   push:
     branches: [ main, master ]
+  # Trigger on pull requests to validate code before merging
   pull_request:
     branches: [ main, master ]
+  # Allow manual triggering from GitHub Actions tab
   workflow_dispatch:
 
+# Environment variables used throughout the workflow
 env:
+  # TODO: Replace with your actual Azure Web App name (e.g., "myapp-prod")
   AZURE_WEBAPP_NAME: your-azure-webapp-name    # Change this to your Azure Web App name
+  # Path where the published application will be stored
   AZURE_WEBAPP_PACKAGE_PATH: '.'
+  # .NET version to use for building and testing
   DOTNET_VERSION: '8.0.x'
 
+# Define the jobs that will run in this workflow
 jobs:
+  # Main job that builds and deploys the application
   build-and-deploy:
+    # Use Ubuntu latest runner for consistent build environment
     runs-on: ubuntu-latest
     
+    # Define the steps to execute in sequence
     steps:
+    # Step 1: Checkout the source code from the repository
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Step 2: Install the specified .NET version on the runner
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    # Step 3: Build the application and run tests
+    # This ensures code quality before deployment
     - name: Build with dotnet
       run: |
+        # Build the application in Release configuration for production
         dotnet build --configuration Release --no-restore
+        # Run all tests to ensure no regressions
         dotnet test --no-build --verbosity normal
 
+    # Step 4: Publish the application for deployment
+    # This creates the optimized files needed for Azure Web App
     - name: Publish with dotnet
       run: |
+        # Publish in Release mode to the specified output directory
         dotnet publish -c Release -o ${{env.AZURE_WEBAPP_PACKAGE_PATH}}/myapp
 
+    # Step 5: Deploy the published application to Azure Web App
+    # This uses the official Azure deployment action
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
+        # The name of your Azure Web App (must match env variable above)
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        # Path to the published application files
         package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}/myapp
+        # Secret containing Azure publish profile (configure in GitHub repository settings)
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
+    # Step 6: Clean up Azure CLI session for security
     - name: Azure logout
       run: |
         az logout

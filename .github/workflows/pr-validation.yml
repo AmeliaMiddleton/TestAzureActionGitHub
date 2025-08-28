@@ -1,33 +1,47 @@
+# This workflow validates pull requests by building and testing the code
+# It runs automatically on all PRs to main/master branches to ensure code quality
 name: Pull Request Validation
 
+# Only trigger on pull requests to protected branches
 on:
   pull_request:
     branches: [ main, master ]
 
+# Environment variables for consistent .NET version
 env:
   DOTNET_VERSION: '8.0.x'
 
+# Define the validation job that will run on pull requests
 jobs:
+  # Job to validate the code quality and functionality
   validate:
+    # Use Ubuntu latest runner for consistent validation environment
     runs-on: ubuntu-latest
     
+    # Define the validation steps in sequence
     steps:
+    # Step 1: Checkout the PR code for validation
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Step 2: Install the specified .NET version for building and testing
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    # Step 3: Restore NuGet packages and dependencies
     - name: Restore dependencies
       run: dotnet restore
 
+    # Step 4: Build the application to check for compilation errors
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
+    # Step 5: Run all tests to ensure functionality is maintained
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
+    # Step 6: Perform additional code analysis and validation
     - name: Run code analysis
       run: dotnet build --configuration Release --verbosity normal

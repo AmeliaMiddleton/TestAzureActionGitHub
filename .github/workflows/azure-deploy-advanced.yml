@@ -1,10 +1,17 @@
+# Advanced deployment workflow with multi-environment support
+# This workflow builds once and deploys to both staging and production environments
+# It includes artifact management and deployment validation
 name: Advanced Azure Deployment
 
+# Define when this workflow should run
 on:
+  # Trigger on push to main/master branch (automatic deployments)
   push:
     branches: [ main, master ]
+  # Trigger on pull requests for validation
   pull_request:
     branches: [ main, master ]
+  # Allow manual triggering with environment selection
   workflow_dispatch:
     inputs:
       environment:
@@ -16,96 +23,141 @@ on:
         - staging
         - production
 
+# Environment variables for the workflow
 env:
+  # .NET version to use for building
   DOTNET_VERSION: '8.0.x'
+  # TODO: Replace with your actual Azure Web App names
   AZURE_WEBAPP_NAME_STAGING: your-staging-webapp-name
   AZURE_WEBAPP_NAME_PRODUCTION: your-production-webapp-name
 
+# Define the jobs that will run in this workflow
 jobs:
+  # First job: Build the application and create artifacts
   build:
     runs-on: ubuntu-latest
+    # Output the package path for other jobs to use
     outputs:
       package-path: ${{ steps.publish.outputs.package-path }}
     
+    # Define the build steps in sequence
     steps:
+    # Step 1: Checkout the source code
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Step 2: Install the specified .NET version
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    # Step 3: Restore NuGet packages and dependencies
     - name: Restore dependencies
       run: dotnet restore
 
+    # Step 4: Build the application in Release configuration
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
+    # Step 5: Run tests with code coverage collection
     - name: Run tests
       run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
+    # Step 6: Publish the application for deployment
     - name: Publish
       id: publish
       run: |
+        # Publish to ./publish directory
         dotnet publish -c Release -o ./publish
+        # Set output variable for other jobs to use
         echo "package-path=./publish" >> $GITHUB_OUTPUT
 
+    # Step 7: Upload build artifacts for deployment jobs
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
+        # Unique name based on commit SHA
         name: webapp-${{ github.sha }}
+        # Path to the published application
         path: ./publish
 
+  # Second job: Deploy to staging environment
   deploy-staging:
+    # Wait for build job to complete before starting
     needs: build
     runs-on: ubuntu-latest
+    # Only deploy on main/master branch pushes (not on PRs)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # Use staging environment for approval workflows
     environment: staging
     
+    # Define the staging deployment steps
     steps:
+    # Step 1: Download the build artifacts from the build job
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: webapp-${{ github.sha }}
 
+    # Step 2: Deploy the application to Azure staging environment
     - name: Deploy to Staging
       uses: azure/webapps-deploy@v3
       with:
+        # Name of your staging Azure Web App
         app-name: ${{ env.AZURE_WEBAPP_NAME_STAGING }}
+        # Deploy the downloaded artifacts
         package: .
+        # Secret containing staging environment publish profile
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
 
+  # Third job: Deploy to production environment
   deploy-production:
+    # Wait for build job to complete before starting
     needs: build
     runs-on: ubuntu-latest
+    # Only deploy on main/master branch pushes (not on PRs)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # Use production environment for approval workflows
     environment: production
     
+    # Define the production deployment steps
     steps:
+    # Step 1: Download the build artifacts from the build job
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: webapp-${{ github.sha }}
 
+    # Step 2: Deploy the application to Azure production environment
     - name: Deploy to Production
       uses: azure/webapps-deploy@v3
       with:
+        # Name of your production Azure Web App
         app-name: ${{ env.AZURE_WEBAPP_NAME_PRODUCTION }}
+        # Deploy the downloaded artifacts
         package: .
+        # Secret containing production environment publish profile
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRODUCTION }}
 
+  # Fourth job: Notify deployment status and validate results
   notify:
+    # Wait for both deployment jobs to complete
     needs: [deploy-staging, deploy-production]
     runs-on: ubuntu-latest
+    # Always run this job, even if deployments fail
     if: always()
     
+    # Define the notification steps
     steps:
+    # Step 1: Check deployment status and provide feedback
     - name: Notify deployment status
       run: |
+        # Check if both staging and production deployments succeeded
         if [ "${{ needs.deploy-staging.result }}" == "success" ] && [ "${{ needs.deploy-production.result }}" == "success" ]; then
           echo "✅ All deployments successful!"
         else
           echo "❌ Some deployments failed"
+          # Exit with error code to mark workflow as failed
           exit 1
         fi
