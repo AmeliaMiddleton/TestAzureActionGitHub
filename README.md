@@ -61,7 +61,7 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
 
 3. **After script completion:**
    - Copy content from `publish-profile.xml`
-   - Continue with [Configure GitHub Secrets](#4-configure-github-secrets)
+   - **Continue with manual steps below** (the script only creates Azure resources)
 
 ---
 
@@ -123,6 +123,12 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
 ### 6. Push to Main Branch
 
 The workflow will automatically trigger when you push to the `main` or `master` branch.
+
+---
+
+## **Important Note**
+
+**Both setup options (Automated and Manual) converge here** - after creating Azure resources and getting the publish profile, you must complete the GitHub configuration steps regardless of which setup method you used.
 
 ## Workflow Details
 
