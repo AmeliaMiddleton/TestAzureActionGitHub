@@ -25,6 +25,7 @@ Use the PowerShell script for quick, automated Azure resource creation.
 - **Best for**: Developers who want fast setup, have Azure CLI installed
 - **Time**: ~5-10 minutes
 - **Requirements**: Azure CLI, PowerShell, Azure permissions
+- **Note**: Free F1 tier available for development/testing (limited resources, may have quota restrictions)
 
 ### **Option B: Manual Setup**
 Follow the step-by-step instructions to create resources manually in Azure Portal.
@@ -47,12 +48,17 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
    .\setup-azure-deployment.ps1
    ```
    
-   Or with parameters:
-   ```powershell
-   .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg"
-   ```
+       Or with parameters:
+    ```powershell
+    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg"
+    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Sku "B1"
+    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Location "West US 2"
+    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Sku "B1" -Location "West US 2"
+    ```
 
 2. **The script will:**
+   - **Interactive Region Selection**: Choose from popular regions or enter custom ones
+   - **Interactive Tier Selection**: Choose from Free, Basic, Standard, or Premium tiers
    - Create Resource Group
    - Create App Service Plan
    - Create Azure Web App
