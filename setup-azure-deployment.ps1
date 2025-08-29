@@ -4,8 +4,8 @@
 param(
     [string]$WebAppName,
     [string]$ResourceGroupName,
-    [string]$Location = "East US",
-    [string]$Sku = "F1"
+    [string]$Location,
+    [string]$Sku
 )
 
 # Function to find regions with specific tier support
@@ -16,14 +16,16 @@ function Find-RegionWithTierSupport {
     Write-Host "3. S1 - Standard" -ForegroundColor White
     Write-Host "4. P1V2 - Premium" -ForegroundColor White
     
-    $tierToFind = Read-Host "Select tier to check (1-4) [default: F1]"
+    $tierToFind = Read-Host "Select tier to check (1-4)"
     
     switch ($tierToFind) {
         "1" { $tierToFind = "F1" }
         "2" { $tierToFind = "B1" }
         "3" { $tierToFind = "S1" }
         "4" { $tierToFind = "P1V2" }
-        default { $tierToFind = "F1" }
+        default { 
+            $tierToFind = Read-Host "Enter custom tier to check (e.g., F1, B1, S1)"
+        }
     }
     
     Write-Host "Searching for regions that support $tierToFind tier..." -ForegroundColor Yellow
@@ -93,7 +95,6 @@ function Find-RegionWithTierSupport {
         Write-Host "Try using a different tier (B1 instead of F1)" -ForegroundColor Yellow
         
         $fallbackRegion = Read-Host "Enter a region to try anyway (e.g., East US)"
-        if (-not $fallbackRegion) { $fallbackRegion = "East US" }
         return $fallbackRegion
     }
 }
@@ -131,72 +132,65 @@ try {
     exit 1
 }
 
-# Region selection (do this first to avoid parameter confusion)
-if (-not $Location) {
-    Write-Host "Popular Azure Regions:" -ForegroundColor Cyan
-    Write-Host "1. East US (Virginia)" -ForegroundColor White
-    Write-Host "2. West US 2 (Washington)" -ForegroundColor White
-    Write-Host "3. Central US (Iowa)" -ForegroundColor White
-    Write-Host "4. North Europe (Ireland)" -ForegroundColor White
-    Write-Host "5. West Europe (Netherlands)" -ForegroundColor White
-    Write-Host "6. East Asia (Hong Kong)" -ForegroundColor White
-    Write-Host "7. Southeast Asia (Singapore)" -ForegroundColor White
-    Write-Host "8. Find regions with specific tier support (e.g., Free F1)" -ForegroundColor White
-    Write-Host "9. Custom - Enter your own region" -ForegroundColor White
-    
-    $regionChoice = Read-Host "Select region (1-9) or enter custom region name [default: East US]"
-    
-    switch ($regionChoice) {
-        "1" { $Location = "East US" }
-        "2" { $Location = "West US 2" }
-        "3" { $Location = "Central US" }
-        "4" { $Location = "North Europe" }
-        "5" { $Location = "West Europe" }
-        "6" { $Location = "East Asia" }
-        "7" { $Location = "Southeast Asia" }
-        "8" { 
-            Write-Host "Checking regions with tier support..." -ForegroundColor Cyan
-            $Location = Find-RegionWithTierSupport
-        }
-        "9" { $Location = Read-Host "Enter custom region name (e.g., Canada Central)" }
-        default { $Location = "East US" }
+# Region selection (always prompt for region)
+Write-Host "`nLet's choose your Azure region:" -ForegroundColor Cyan
+Write-Host "Popular Azure Regions:" -ForegroundColor Cyan
+Write-Host "1. East US (Virginia)" -ForegroundColor White
+Write-Host "2. West US 2 (Washington)" -ForegroundColor White
+Write-Host "3. Central US (Iowa)" -ForegroundColor White
+Write-Host "4. North Europe (Ireland)" -ForegroundColor White
+Write-Host "5. West Europe (Netherlands)" -ForegroundColor White
+Write-Host "6. East Asia (Hong Kong)" -ForegroundColor White
+Write-Host "7. Southeast Asia (Singapore)" -ForegroundColor White
+Write-Host "8. Find regions with specific tier support (e.g., Free F1)" -ForegroundColor White
+Write-Host "9. Custom - Enter your own region" -ForegroundColor White
+
+$regionChoice = Read-Host "Select region (1-9) or enter custom region name"
+
+switch ($regionChoice) {
+    "1" { $Location = "East US" }
+    "2" { $Location = "West US 2" }
+    "3" { $Location = "Central US" }
+    "4" { $Location = "North Europe" }
+    "5" { $Location = "West Europe" }
+    "6" { $Location = "East Asia" }
+    "7" { $Location = "Southeast Asia" }
+    "8" { 
+        Write-Host "Checking regions with tier support..." -ForegroundColor Cyan
+        $Location = Find-RegionWithTierSupport
     }
-    
-    Write-Host "Selected region: $Location" -ForegroundColor Green
+    "9" { $Location = Read-Host "Enter custom region name (e.g., Canada Central)" }
+    default { $Location = Read-Host "Enter region name (e.g., East US)" }
 }
 
-# Get parameters (after region selection to avoid confusion)
-if (-not $WebAppName) {
-    $WebAppName = Read-Host "Enter the name for your Azure Web App"
-}
+Write-Host "Selected region: $Location" -ForegroundColor Green
 
-if (-not $ResourceGroupName) {
-    $ResourceGroupName = Read-Host "Enter the name for your Resource Group"
-}
+# Get all required parameters
+Write-Host "`nLet's get your configuration details:" -ForegroundColor Cyan
+$WebAppName = Read-Host "Enter the name for your Azure Web App"
+$ResourceGroupName = Read-Host "Enter the name for your Resource Group"
 
 # Tier selection
-if (-not $Sku) {
-    Write-Host "App Service Plan Tiers:" -ForegroundColor Cyan
-    Write-Host "1. F1 - Free (Shared, 1GB RAM, 60 minutes/day CPU) - $0/month - May have quota restrictions" -ForegroundColor White
-    Write-Host "2. B1 - Basic (Dedicated, 1.75GB RAM, unlimited CPU) - ~$12-15/month" -ForegroundColor White
-    Write-Host "3. S1 - Standard (Dedicated, 1.75GB RAM, unlimited CPU) - ~$70-80/month" -ForegroundColor White
-    Write-Host "4. P1V2 - Premium V2 (Dedicated, 2GB RAM, unlimited CPU) - ~$140-160/month" -ForegroundColor White
-    
-    $tierChoice = Read-Host "Select tier (1-4) or enter custom SKU [default: F1]"
-    
-    switch ($tierChoice) {
-        "1" { $Sku = "F1" }
-        "2" { $Sku = "B1" }
-        "3" { $Sku = "S1" }
-        "4" { $Sku = "P1V2" }
-        default { 
-            $Sku = Read-Host "Enter custom SKU (e.g., B2, S2, P2V2)"
-            if (-not $Sku) { $Sku = "F1" }
-        }
+Write-Host "`nLet's choose your App Service Plan tier:" -ForegroundColor Cyan
+Write-Host "App Service Plan Tiers:" -ForegroundColor Cyan
+Write-Host "1. F1 - Free (Shared, 1GB RAM, 60 minutes/day CPU) - $0/month - May have quota restrictions" -ForegroundColor White
+Write-Host "2. B1 - Basic (Dedicated, 1.75GB RAM, unlimited CPU) - ~$12-15/month" -ForegroundColor White
+Write-Host "3. S1 - Standard (Dedicated, 1.75GB RAM, unlimited CPU) - ~$70-80/month" -ForegroundColor White
+Write-Host "4. P1V2 - Premium V2 (Dedicated, 2GB RAM, unlimited CPU) - ~$140-160/month" -ForegroundColor White
+
+$tierChoice = Read-Host "Select tier (1-4) or enter custom SKU"
+
+switch ($tierChoice) {
+    "1" { $Sku = "F1" }
+    "2" { $Sku = "B1" }
+    "3" { $Sku = "S1" }
+    "4" { $Sku = "P1V2" }
+    default { 
+        $Sku = Read-Host "Enter custom SKU (e.g., B2, S2, P2V2)"
     }
-    
-    Write-Host "Selected tier: $Sku" -ForegroundColor Green
 }
+
+Write-Host "Selected tier: $Sku" -ForegroundColor Green
 
 # Configuration summary
 Write-Host "Configuration Summary:" -ForegroundColor Cyan
