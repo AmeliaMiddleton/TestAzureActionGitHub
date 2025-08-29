@@ -37,6 +37,8 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
 
 ### **Option A: Automated Setup with PowerShell Script**
 
+**New in this version**: The script now **always prompts for all values** instead of using defaults, making it more interactive and user-friendly!
+
 **Prerequisites:**
 - Azure CLI installed ([Download here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli))
 - Logged in to Azure (`az login`)
@@ -48,31 +50,52 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
    .\setup-azure-deployment.ps1
    ```
    
-       Or with parameters:
-    ```powershell
-    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg"
-    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Sku "B1"
-    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Location "West US 2"
-    .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Sku "B1" -Location "West US 2"
-    ```
+   **Note**: The script will now prompt you for all values interactively. You can still use parameters if desired:
+   ```powershell
+   .\setup-azure-deployment.ps1 -WebAppName "myapp-prod" -ResourceGroupName "myapp-rg" -Location "Central US" -Sku "F1"
+   ```
+   
+   **Script Execution Options:**
+   - **PowerShell**: `.\setup-azure-deployment.ps1`
+   - **Command Prompt**: `powershell -ExecutionPolicy Bypass -File setup-azure-deployment.ps1`
+   - **With Parameters**: Add `-WebAppName`, `-ResourceGroupName`, `-Location`, `-Sku` to skip specific prompts
 
-2. **The script will:**
-   - **Interactive Region Selection**: Choose from popular regions or enter custom ones
-   - **Interactive Tier Selection**: Choose from Free, Basic, Standard, or Premium tiers
+2. **The script will interactively prompt you for:**
+   - **Region Selection**: Choose from popular regions (East US, West US 2, Central US, Europe, Asia, etc.) or enter custom ones
+   - **Region Tier Support Check**: Option to find regions that support specific tiers (especially useful for Free F1 tier which often has quota restrictions)
+   - **Web App Name**: Enter a globally unique name for your Azure Web App
+   - **Resource Group Name**: Enter a name for organizing your Azure resources
+   - **App Service Plan Tier**: Choose from Free (F1), Basic (B1), Standard (S1), or Premium (P1V2) tiers
+   
+   **Then automatically:**
    - Create Resource Group
    - Create App Service Plan
    - Create Azure Web App
    - Download publish profile
    - Save it as `publish-profile.xml`
 
-3. **After script completion:**
+3. **Interactive Features Explained:**
+   
+   **Region Selection Options:**
+   - **Options 1-7**: Popular regions with descriptions (East US, West US 2, Central US, North Europe, West Europe, East Asia, Southeast Asia)
+   - **Option 8**: **Find regions with specific tier support** - This feature tests multiple regions to find which ones support your desired tier (especially useful for Free F1 tier which has quota restrictions)
+   - **Option 9**: Enter a custom region name
+   
+   **Tier Selection:**
+   - **F1 (Free)**: $0/month, shared resources, 1GB RAM, 60 minutes/day CPU - May have quota restrictions
+   - **B1 (Basic)**: ~$12-15/month, dedicated resources, 1.75GB RAM, unlimited CPU
+   - **S1 (Standard)**: ~$70-80/month, dedicated resources, 1.75GB RAM, unlimited CPU
+   - **P1V2 (Premium)**: ~$140-160/month, dedicated resources, 2GB RAM, unlimited CPU
+   - **Custom**: Enter any other SKU (e.g., B2, S2, P2V2)
+
+4. **After script completion:**
    - **Copy the entire content** from `publish-profile.xml` file:
      - Open the `publish-profile.xml` file in any text editor (Notepad, VS Code, etc.)
      - Select **all content** (Ctrl+A) and copy it (Ctrl+C)
      - The content should start with `<?xml version="1.0"` and contain the complete publish profile XML
      - **Important**: Copy the entire XML content, not just individual values
 
-4. **Configure GitHub Secrets:**
+5. **Configure GitHub Secrets:**
    - Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**
    - Click **New repository secret**
    - Add the following secret:
@@ -81,7 +104,7 @@ Follow the step-by-step instructions to create resources manually in Azure Porta
    - Click **Add secret**
    - **Note**: The secret value should start with `<?xml version="1.0"` and contain the complete publish profile XML
 
-5. **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
+6. **Continue with [Update Workflow Configuration](#5-update-workflow-configuration)** (the script only creates Azure resources)
 
 ---
 
