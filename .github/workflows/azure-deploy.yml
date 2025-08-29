@@ -15,8 +15,8 @@ on:
 
 # Environment variables used throughout the workflow
 env:
-  # TODO: Replace with your actual Azure Web App name (e.g., "myapp-prod")
-  AZURE_WEBAPP_NAME: your-azure-webapp-name    # Change this to your Azure Web App name
+  # Your Azure Web App name (update this if you want to use a different one)
+  AZURE_WEBAPP_NAME: myapp-centralus
   # Path where the published application will be stored
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   # .NET version to use for building and testing

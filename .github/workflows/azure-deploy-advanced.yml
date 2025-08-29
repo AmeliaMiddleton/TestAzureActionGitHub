@@ -27,9 +27,8 @@ on:
 env:
   # .NET version to use for building
   DOTNET_VERSION: '8.0.x'
-  # TODO: Replace with your actual Azure Web App names
-  AZURE_WEBAPP_NAME_STAGING: your-staging-webapp-name
-  AZURE_WEBAPP_NAME_PRODUCTION: your-production-webapp-name
+  # Your Azure Web App name (using the same one for both staging and production for now)
+  AZURE_WEBAPP_NAME: myapp-centralus
 
 # Define the jobs that will run in this workflow
 jobs:
@@ -104,12 +103,12 @@ jobs:
     - name: Deploy to Staging
       uses: azure/webapps-deploy@v3
       with:
-        # Name of your staging Azure Web App
-        app-name: ${{ env.AZURE_WEBAPP_NAME_STAGING }}
+        # Name of your Azure Web App
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
         # Deploy the downloaded artifacts
         package: .
-        # Secret containing staging environment publish profile
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
+        # Secret containing Azure publish profile
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
   # Third job: Deploy to production environment
   deploy-production:
@@ -133,12 +132,12 @@ jobs:
     - name: Deploy to Production
       uses: azure/webapps-deploy@v3
       with:
-        # Name of your production Azure Web App
-        app-name: ${{ env.AZURE_WEBAPP_NAME_PRODUCTION }}
+        # Name of your Azure Web App
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
         # Deploy the downloaded artifacts
         package: .
-        # Secret containing production environment publish profile
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRODUCTION }}
+        # Secret containing Azure publish profile
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
   # Fourth job: Notify deployment status and validate results
   notify:
