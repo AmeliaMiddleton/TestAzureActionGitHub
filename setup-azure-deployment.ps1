@@ -160,24 +160,17 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Creating Web App..." -ForegroundColor Yellow
-az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName
+Write-Host "Creating Linux Web App..." -ForegroundColor Yellow
+az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName --runtime "dotnet:8"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to create Web App" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Configuring Web App..." -ForegroundColor Yellow
-# Set the startup file
+Write-Host "Configuring Linux Web App..." -ForegroundColor Yellow
+# Set the startup command for Linux web app
 az webapp config set --resource-group $ResourceGroupName --name $WebAppName --startup-file "dotnet TestAzureActionGithub.dll"
-
-# Set the .NET framework version to 8.0
-az webapp config set --resource-group $ResourceGroupName --name $WebAppName --net-framework-version "v8.0"
-
-# Set the Windows runtime stack using Start-Process to avoid pipe character issues
-$runtimeArgs = @("webapp", "config", "set", "--resource-group", $ResourceGroupName, "--name", $WebAppName, "--windows-fx-version", "DOTNET|8.0")
-Start-Process -FilePath "az" -ArgumentList $runtimeArgs -Wait -NoNewWindow
 
 # Get publish profile
 Write-Host "Getting publish profile..." -ForegroundColor Yellow

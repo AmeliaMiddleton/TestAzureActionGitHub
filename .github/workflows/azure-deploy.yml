@@ -26,8 +26,8 @@ env:
 jobs:
   # Main job that builds and deploys the application
   build-and-deploy:
-    # Use Windows latest runner for consistent build environment
-    runs-on: windows-latest
+    # Use Ubuntu latest runner for Linux web app deployment
+    runs-on: ubuntu-latest
     
     # Define the steps to execute in sequence
     steps:
