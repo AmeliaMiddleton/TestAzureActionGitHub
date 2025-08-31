@@ -1,4 +1,4 @@
-# This workflow automatically builds and deploys your .NET Blazor application to Azure Web App
+﻿# This workflow automatically builds and deploys your .NET Blazor application to Azure Web App
 # It triggers on pushes to main/master branches, pull requests, and manual dispatch
 name: Deploy to Azure Web App
 
@@ -16,7 +16,7 @@ on:
 # Environment variables used throughout the workflow
 env:
   # Your Azure Web App name (update this if you want to use a different one)
-  AZURE_WEBAPP_NAME: myapp-centralus
+  AZURE_WEBAPP_NAME: testwebapp-8-31-2025-4-01
   # Path where the published application will be stored
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   # .NET version to use for building and testing
@@ -73,3 +73,4 @@ jobs:
     - name: Azure logout
       run: |
         az logout
+

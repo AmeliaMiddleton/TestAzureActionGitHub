@@ -1,4 +1,4 @@
-# Advanced deployment workflow with multi-environment support
+﻿# Advanced deployment workflow with multi-environment support
 # This workflow builds once and deploys to both staging and production environments
 # It includes artifact management and deployment validation
 name: Advanced Azure Deployment
@@ -28,7 +28,7 @@ env:
   # .NET version to use for building
   DOTNET_VERSION: '8.0.x'
   # Your Azure Web App name (using the same one for both staging and production for now)
-  AZURE_WEBAPP_NAME: myapp-centralus
+  AZURE_WEBAPP_NAME: testwebapp-8-31-2025-4-01
 
 # Define the jobs that will run in this workflow
 jobs:
@@ -154,9 +154,10 @@ jobs:
       run: |
         # Check if both staging and production deployments succeeded
         if [ "${{ needs.deploy-staging.result }}" == "success" ] && [ "${{ needs.deploy-production.result }}" == "success" ]; then
-          echo "✅ All deployments successful!"
+          echo "âœ… All deployments successful!"
         else
-          echo "❌ Some deployments failed"
+          echo "âŒ Some deployments failed"
           # Exit with error code to mark workflow as failed
           exit 1
         fi
+
