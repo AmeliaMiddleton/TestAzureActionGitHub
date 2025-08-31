@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Disable all NuGet fallback folders globally -->
-    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-    <RestoreFallbackFolders>false</RestoreFallbackFolders>
-  </PropertyGroup>
-</Project>

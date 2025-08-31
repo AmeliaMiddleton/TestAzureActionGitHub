@@ -26,7 +26,7 @@ on:
 # Environment variables for the workflow
 env:
   # .NET version to use for building
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '8.0.100'
   # Your Azure Web App name (using the same one for both staging and production for now)
   AZURE_WEBAPP_NAME: testwebapp-8-31-2025-4-01
 
@@ -53,21 +53,15 @@ jobs:
 
     # Step 3: Restore NuGet packages and dependencies
     - name: Restore dependencies
-      env:
-        DOTNET_NUGET_SKIP_CACHE: true
-        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       run: |
         # Clear any existing NuGet cache completely
         dotnet nuget locals all --clear
-        # Restore packages with minimal configuration
-        dotnet restore --verbosity normal
+        # Restore packages
+        dotnet restore
 
     # Step 4: Build the application in Release configuration
     - name: Build
-      env:
-        DOTNET_NUGET_SKIP_CACHE: true
-        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      run: dotnet build --configuration Release --no-restore --verbosity normal
+      run: dotnet build --configuration Release --no-restore
 
     # Step 5: Run tests with code coverage collection
     - name: Run tests
