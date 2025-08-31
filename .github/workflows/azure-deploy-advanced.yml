@@ -101,6 +101,8 @@ jobs:
         package: .
         # Secret containing Azure publish profile
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        # Explicitly specify no slot (use main slot)
+        slot-name: ''
 
   # Third job: Notify deployment status
   notify:
