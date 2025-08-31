@@ -1,105 +1,6 @@
-# Azure Deployment Setup Script with Region Tier Support
-# This script helps you set up Azure resources and find regions that support specific tiers
+﻿# Azure Deployment Setup Script
+# This script creates an Azure Web App for your .NET application
 
-param(
-    [string]$WebAppName,
-    [string]$ResourceGroupName,
-    [string]$Location,
-    [string]$Sku
-)
-
-# Function to find regions with specific tier support
-function Find-RegionWithTierSupport {
-    Write-Host "What tier are you looking for?" -ForegroundColor Cyan
-    Write-Host "1. F1 - Free (most restrictive)" -ForegroundColor White
-    Write-Host "2. B1 - Basic" -ForegroundColor White
-    Write-Host "3. S1 - Standard" -ForegroundColor White
-    Write-Host "4. P1V2 - Premium" -ForegroundColor White
-    
-    $tierToFind = Read-Host "Select tier to check (1-4)"
-    
-    switch ($tierToFind) {
-        "1" { $tierToFind = "F1" }
-        "2" { $tierToFind = "B1" }
-        "3" { $tierToFind = "S1" }
-        "4" { $tierToFind = "P1V2" }
-        default { 
-            $tierToFind = Read-Host "Enter custom tier to check (e.g., F1, B1, S1)"
-        }
-    }
-    
-    Write-Host "Searching for regions that support $tierToFind tier..." -ForegroundColor Yellow
-    Write-Host "This may take a few minutes..." -ForegroundColor Yellow
-    
-    # List of regions to test
-    $regionsToTest = @(
-        "East US", "West US 2", "Central US", "South Central US",
-        "North Europe", "West Europe", "East Asia", "Southeast Asia",
-        "Canada Central", "Canada East", "Brazil South", "Australia East"
-    )
-    
-    $supportedRegions = @()
-    $testedCount = 0
-    
-    foreach ($region in $regionsToTest) {
-        $testedCount++
-        Write-Host "Testing region $testedCount of $($regionsToTest.Count): $region" -ForegroundColor Cyan
-        
-        try {
-            # Test if we can create a temporary app service plan in this region
-            $testGroupName = "test-group-$([System.Guid]::NewGuid().ToString('N')[0..7] -join '')"
-            $testPlanName = "test-plan-$([System.Guid]::NewGuid().ToString('N')[0..7] -join '')"
-            
-            # Create temporary resource group
-            $null = az group create --name $testGroupName --location $region --output none 2>$null
-            
-            if ($LASTEXITCODE -eq 0) {
-                # Try to create app service plan with the specified tier
-                $null = az appservice plan create --name $testPlanName --resource-group $testGroupName --location $region --sku $tierToFind --output none 2>$null
-                
-                if ($LASTEXITCODE -eq 0) {
-                    $supportedRegions += $region
-                    Write-Host "$region supports $tierToFind" -ForegroundColor Green
-                } else {
-                    Write-Host "$region does not support $tierToFind" -ForegroundColor Red
-                }
-                
-                # Clean up temporary resources
-                $null = az group delete --name $testGroupName --yes --output none 2>$null
-            }
-        } catch {
-            Write-Host "Could not test $region" -ForegroundColor Yellow
-        }
-        
-        # Small delay to avoid rate limiting
-        Start-Sleep -Milliseconds 500
-    }
-    
-    Write-Host "Region testing completed!" -ForegroundColor Green
-    
-    if ($supportedRegions.Count -gt 0) {
-        Write-Host "Found $($supportedRegions.Count) regions that support $tierToFind" -ForegroundColor Green
-        for ($i = 0; $i -lt $supportedRegions.Count; $i++) {
-            Write-Host "$($i + 1). $($supportedRegions[$i])" -ForegroundColor White
-        }
-        
-        $regionChoice = Read-Host "Select a region (1-$($supportedRegions.Count)) or enter custom region name"
-        
-        if ($regionChoice -match '^\d+$' -and [int]$regionChoice -le $supportedRegions.Count) {
-            return $supportedRegions[[int]$regionChoice - 1]
-        } else {
-            return $regionChoice
-        }
-    } else {
-        Write-Host "No regions found that support $tierToFind tier" -ForegroundColor Red
-        Write-Host "Try using a different tier (B1 instead of F1)" -ForegroundColor Yellow
-        
-        $fallbackRegion = Read-Host "Enter a region to try anyway (e.g., East US)"
-        return $fallbackRegion
-    }
-}
-
-# Main script logic
 Write-Host "Azure Deployment Setup Script" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
 
@@ -132,59 +33,93 @@ try {
     exit 1
 }
 
-# Region selection (always prompt for region)
+# Get configuration details
+Write-Host "`nLet's get your configuration details:" -ForegroundColor Cyan
+$WebAppName = Read-Host "Enter the name for your Azure Web App"
+$ResourceGroupName = Read-Host "Enter the name for your Resource Group"
+
+# Region selection with comprehensive options
 Write-Host "`nLet's choose your Azure region:" -ForegroundColor Cyan
 Write-Host "Popular Azure Regions:" -ForegroundColor Cyan
-Write-Host "1. East US (Virginia)" -ForegroundColor White
-Write-Host "2. West US 2 (Washington)" -ForegroundColor White
-Write-Host "3. Central US (Iowa)" -ForegroundColor White
-Write-Host "4. North Europe (Ireland)" -ForegroundColor White
-Write-Host "5. West Europe (Netherlands)" -ForegroundColor White
-Write-Host "6. East Asia (Hong Kong)" -ForegroundColor White
-Write-Host "7. Southeast Asia (Singapore)" -ForegroundColor White
-Write-Host "8. Find regions with specific tier support (e.g., Free F1)" -ForegroundColor White
-Write-Host "9. Custom - Enter your own region" -ForegroundColor White
+Write-Host "1. East US (Virginia) - Recommended for US East Coast" -ForegroundColor White
+Write-Host "2. West US 2 (Washington) - Recommended for US West Coast" -ForegroundColor White
+Write-Host "3. Central US (Iowa) - Recommended for US Central" -ForegroundColor White
+Write-Host "4. South Central US (Texas) - Good for US South" -ForegroundColor White
+Write-Host "5. North Europe (Ireland) - Recommended for Europe" -ForegroundColor White
+Write-Host "6. West Europe (Netherlands) - Good for Europe" -ForegroundColor White
+Write-Host "7. East Asia (Hong Kong) - Good for Asia Pacific" -ForegroundColor White
+Write-Host "8. Southeast Asia (Singapore) - Good for Asia Pacific" -ForegroundColor White
+Write-Host "9. Canada Central (Toronto) - Good for Canada" -ForegroundColor White
+Write-Host "10. Australia East (Sydney) - Good for Australia" -ForegroundColor White
+Write-Host "11. Brazil South (Sao Paulo) - Good for South America" -ForegroundColor White
+Write-Host "12. Custom - Enter your own region" -ForegroundColor White
 
-$regionChoice = Read-Host "Select region (1-9) or enter custom region name"
+$regionChoice = Read-Host "Select region (1-12) or enter custom region name"
 
 switch ($regionChoice) {
     "1" { $Location = "East US" }
     "2" { $Location = "West US 2" }
     "3" { $Location = "Central US" }
-    "4" { $Location = "North Europe" }
-    "5" { $Location = "West Europe" }
-    "6" { $Location = "East Asia" }
-    "7" { $Location = "Southeast Asia" }
-    "8" { 
-        Write-Host "Checking regions with tier support..." -ForegroundColor Cyan
-        $Location = Find-RegionWithTierSupport
-    }
-    "9" { $Location = Read-Host "Enter custom region name (e.g., Canada Central)" }
+    "4" { $Location = "South Central US" }
+    "5" { $Location = "North Europe" }
+    "6" { $Location = "West Europe" }
+    "7" { $Location = "East Asia" }
+    "8" { $Location = "Southeast Asia" }
+    "9" { $Location = "Canada Central" }
+    "10" { $Location = "Australia East" }
+    "11" { $Location = "Brazil South" }
+    "12" { $Location = Read-Host "Enter custom region name (e.g., Japan East, UK South)" }
     default { $Location = Read-Host "Enter region name (e.g., East US)" }
 }
 
 Write-Host "Selected region: $Location" -ForegroundColor Green
 
-# Get all required parameters
-Write-Host "`nLet's get your configuration details:" -ForegroundColor Cyan
-$WebAppName = Read-Host "Enter the name for your Azure Web App"
-$ResourceGroupName = Read-Host "Enter the name for your Resource Group"
-
-# Tier selection
+# Tier selection with comprehensive options
 Write-Host "`nLet's choose your App Service Plan tier:" -ForegroundColor Cyan
-Write-Host "App Service Plan Tiers:" -ForegroundColor Cyan
-Write-Host "1. F1 - Free (Shared, 1GB RAM, 60 minutes/day CPU) - $0/month - May have quota restrictions" -ForegroundColor White
-Write-Host "2. B1 - Basic (Dedicated, 1.75GB RAM, unlimited CPU) - ~$12-15/month" -ForegroundColor White
-Write-Host "3. S1 - Standard (Dedicated, 1.75GB RAM, unlimited CPU) - ~$70-80/month" -ForegroundColor White
-Write-Host "4. P1V2 - Premium V2 (Dedicated, 2GB RAM, unlimited CPU) - ~$140-160/month" -ForegroundColor White
+Write-Host "Free Tier (Shared Resources):" -ForegroundColor Yellow
+Write-Host "1. F1 - Free (Shared, 1GB RAM, 60 minutes/day CPU) - $0/month" -ForegroundColor White
+Write-Host "   WARNING: May have quota restrictions, not recommended for production" -ForegroundColor Red
 
-$tierChoice = Read-Host "Select tier (1-4) or enter custom SKU"
+Write-Host "`nBasic Tiers (Dedicated Resources):" -ForegroundColor Yellow
+Write-Host "2. B1 - Basic (1.75GB RAM, unlimited CPU) - ~$12-15/month" -ForegroundColor White
+Write-Host "3. B2 - Basic (3.5GB RAM, unlimited CPU) - ~$24-30/month" -ForegroundColor White
+Write-Host "4. B3 - Basic (7GB RAM, unlimited CPU) - ~$48-60/month" -ForegroundColor White
+
+Write-Host "`nStandard Tiers (Dedicated Resources + Auto-scaling):" -ForegroundColor Yellow
+Write-Host "5. S1 - Standard (1.75GB RAM, unlimited CPU) - ~$70-80/month" -ForegroundColor White
+Write-Host "6. S2 - Standard (3.5GB RAM, unlimited CPU) - ~$140-160/month" -ForegroundColor White
+Write-Host "7. S3 - Standard (7GB RAM, unlimited CPU) - ~$280-320/month" -ForegroundColor White
+
+Write-Host "`nPremium Tiers (Dedicated Resources + Advanced Features):" -ForegroundColor Yellow
+Write-Host "8. P1V2 - Premium V2 (2GB RAM, unlimited CPU) - ~$140-160/month" -ForegroundColor White
+Write-Host "9. P2V2 - Premium V2 (4GB RAM, unlimited CPU) - ~$280-320/month" -ForegroundColor White
+Write-Host "10. P3V2 - Premium V2 (8GB RAM, unlimited CPU) - ~$560-640/month" -ForegroundColor White
+
+Write-Host "`nIsolated Tiers (VNet Integration):" -ForegroundColor Yellow
+Write-Host "11. I1 - Isolated (2GB RAM, unlimited CPU) - ~$280-320/month" -ForegroundColor White
+Write-Host "12. I2 - Isolated (4GB RAM, unlimited CPU) - ~$560-640/month" -ForegroundColor White
+
+Write-Host "`nRecommended for:" -ForegroundColor Cyan
+Write-Host "• Development/Testing: F1 (Free) or B1 (Basic)" -ForegroundColor White
+Write-Host "• Small Production: B1 or S1" -ForegroundColor White
+Write-Host "• Medium Production: S1 or S2" -ForegroundColor White
+Write-Host "• Large Production: S2, S3, or Premium tiers" -ForegroundColor White
+
+$tierChoice = Read-Host "Select tier (1-12) or enter custom SKU"
 
 switch ($tierChoice) {
     "1" { $Sku = "F1" }
     "2" { $Sku = "B1" }
-    "3" { $Sku = "S1" }
-    "4" { $Sku = "P1V2" }
+    "3" { $Sku = "B2" }
+    "4" { $Sku = "B3" }
+    "5" { $Sku = "S1" }
+    "6" { $Sku = "S2" }
+    "7" { $Sku = "S3" }
+    "8" { $Sku = "P1V2" }
+    "9" { $Sku = "P2V2" }
+    "10" { $Sku = "P3V2" }
+    "11" { $Sku = "I1" }
+    "12" { $Sku = "I2" }
     default { 
         $Sku = Read-Host "Enter custom SKU (e.g., B2, S2, P2V2)"
     }
@@ -255,7 +190,6 @@ $basicWorkflowPath = ".github/workflows/azure-deploy.yml"
 if (Test-Path $basicWorkflowPath) {
     try {
         $content = Get-Content $basicWorkflowPath -Raw
-        # Replace only the AZURE_WEBAPP_NAME environment variable line, not comments
         $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*)[^\r\n]*', "`$1$WebAppName"
         Set-Content $basicWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $basicWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
@@ -271,7 +205,6 @@ $advancedWorkflowPath = ".github/workflows/azure-deploy-advanced.yml"
 if (Test-Path $advancedWorkflowPath) {
     try {
         $content = Get-Content $advancedWorkflowPath -Raw
-        # Replace only the AZURE_WEBAPP_NAME environment variable line, not comments
         $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*)[^\r\n]*', "`$1$WebAppName"
         Set-Content $advancedWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $advancedWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
@@ -293,10 +226,10 @@ Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "1. Copying secret name to clipboard..." -ForegroundColor Yellow
 $secretName = "AZURE_WEBAPP_PUBLISH_PROFILE"
 Set-Clipboard -Value $secretName
-Write-Host "   ✅ Secret name copied to clipboard: $secretName" -ForegroundColor Green
-Write-Host "   📋 Go to GitHub → Settings → Secrets → Actions → New repository secret" -ForegroundColor White
-Write-Host "   📋 In the 'Name' field, just paste (Ctrl+V) - the secret name is already in your clipboard" -ForegroundColor White
-Write-Host "   📋 Press Enter when ready for the next step..." -ForegroundColor Cyan
+Write-Host "   SUCCESS: Secret name copied to clipboard: $secretName" -ForegroundColor Green
+Write-Host "   Go to GitHub → Settings → Secrets → Actions → New repository secret" -ForegroundColor White
+Write-Host "   In the 'Name' field, just paste (Ctrl+V) - the secret name is already in your clipboard" -ForegroundColor White
+Write-Host "   Press Enter when ready for the next step..." -ForegroundColor Cyan
 Read-Host
 
 # Step 2: Copy publish profile content to clipboard
@@ -304,15 +237,15 @@ Write-Host "2. Copying publish profile content to clipboard..." -ForegroundColor
 if (Test-Path "publish-profile.xml") {
     $publishContent = Get-Content "publish-profile.xml" -Raw
     Set-Clipboard -Value $publishContent
-    Write-Host "   ✅ Publish profile content copied to clipboard!" -ForegroundColor Green
-    Write-Host "   📋 In the 'Value' field, just paste (Ctrl+V) - the content is already in your clipboard" -ForegroundColor White
-    Write-Host "   📋 Click 'Add secret'" -ForegroundColor White
+    Write-Host "   SUCCESS: Publish profile content copied to clipboard!" -ForegroundColor Green
+    Write-Host "   In the 'Value' field, just paste (Ctrl+V) - the content is already in your clipboard" -ForegroundColor White
+    Write-Host "   Click 'Add secret'" -ForegroundColor White
 } else {
-    Write-Host "   ❌ publish-profile.xml not found!" -ForegroundColor Red
-    Write-Host "   📋 Please manually copy the content from publish-profile.xml" -ForegroundColor Yellow
+    Write-Host "   ERROR: publish-profile.xml not found!" -ForegroundColor Red
+    Write-Host "   Please manually copy the content from publish-profile.xml" -ForegroundColor Yellow
 }
 
-Write-Host "3. ✅ Workflow files have been automatically updated with Web App name: $WebAppName" -ForegroundColor Green
+Write-Host "3. SUCCESS: Workflow files have been automatically updated with Web App name: $WebAppName" -ForegroundColor Green
 Write-Host "4. Push your changes to trigger the deployment!" -ForegroundColor White
 
 Write-Host "Useful Links:" -ForegroundColor Cyan
