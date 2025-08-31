@@ -106,7 +106,7 @@ Write-Host "================================" -ForegroundColor Green
 # Check Azure CLI
 Write-Host "Checking prerequisites..." -ForegroundColor Cyan
 try {
-    $azVersion = az --version 2>$null
+    az --version 2>$null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Azure CLI is installed" -ForegroundColor Green
     } else {
@@ -255,8 +255,8 @@ $basicWorkflowPath = ".github/workflows/azure-deploy.yml"
 if (Test-Path $basicWorkflowPath) {
     try {
         $content = Get-Content $basicWorkflowPath -Raw
-        # Replace whatever is currently after AZURE_WEBAPP_NAME: with the new Web App name
-        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*).*', "`$1$WebAppName"
+        # Replace only the AZURE_WEBAPP_NAME environment variable line, not comments
+        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*)[^\r\n]*', "`$1$WebAppName"
         Set-Content $basicWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $basicWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
     } catch {
@@ -271,8 +271,8 @@ $advancedWorkflowPath = ".github/workflows/azure-deploy-advanced.yml"
 if (Test-Path $advancedWorkflowPath) {
     try {
         $content = Get-Content $advancedWorkflowPath -Raw
-        # Replace whatever is currently after AZURE_WEBAPP_NAME: with the new Web App name
-        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*).*', "`$1$WebAppName"
+        # Replace only the AZURE_WEBAPP_NAME environment variable line, not comments
+        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*)[^\r\n]*', "`$1$WebAppName"
         Set-Content $advancedWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $advancedWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
     } catch {
