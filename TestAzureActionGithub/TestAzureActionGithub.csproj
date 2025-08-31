@@ -11,6 +11,17 @@
     <RestoreAdditionalProjectSources></RestoreAdditionalProjectSources>
     <RestoreAdditionalProjectFallbackFolders></RestoreAdditionalProjectFallbackFolders>
     <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
+    <!-- Additional properties to disable fallback folders -->
+    <RestorePackagesPath>$(MSBuildThisFileDirectory)packages</RestorePackagesPath>
+    <RestoreRoot>$(MSBuildThisFileDirectory)</RestoreRoot>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Explicitly clear any fallback package sources -->
+    <PackageSource Remove="*" />
+    <PackageSource Include="https://api.nuget.org/v3/index.json" />
+  </ItemGroup>
 
 </Project>
