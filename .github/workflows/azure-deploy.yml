@@ -16,7 +16,7 @@ on:
 # Environment variables used throughout the workflow
 env:
   # Your Azure Web App name (update this if you want to use a different one)
-  AZURE_WEBAPP_NAME: testapp083122025
+  AZURE_WEBAPP_NAME: testwebapp08312025548
   # Path where the published application will be stored
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   # .NET version to use for building and testing
@@ -77,5 +77,6 @@ jobs:
     - name: Azure logout
       run: |
         az logout
+
 
 

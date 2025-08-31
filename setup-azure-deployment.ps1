@@ -161,7 +161,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Creating Web App..." -ForegroundColor Yellow
-az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName --runtime "dotnet:8"
+az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to create Web App" -ForegroundColor Red
@@ -169,7 +169,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Configuring Web App..." -ForegroundColor Yellow
-az webapp config set --resource-group $ResourceGroupName --name $WebAppName --startup-file "dotnet TestAzureActionGithub.dll"
+# Use PowerShell's escape character for the pipe
+az webapp config set --resource-group $ResourceGroupName --name $WebAppName --startup-file "dotnet TestAzureActionGithub.dll" --windows-fx-version "DOTNET^|8.0"
 
 # Get publish profile
 Write-Host "Getting publish profile..." -ForegroundColor Yellow
