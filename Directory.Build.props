@@ -3,11 +3,5 @@
     <!-- Disable all NuGet fallback folders globally -->
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <RestoreFallbackFolders>false</RestoreFallbackFolders>
-    <RestoreAdditionalProjectFallbackFolders></RestoreAdditionalProjectFallbackFolders>
-    <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
-    <!-- Use explicit package path -->
-    <RestorePackagesPath>$(MSBuildThisFileDirectory)packages</RestorePackagesPath>
-    <!-- Disable implicit package sources -->
-    <RestoreAdditionalProjectSources></RestoreAdditionalProjectSources>
   </PropertyGroup>
 </Project>
