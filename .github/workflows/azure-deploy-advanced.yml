@@ -34,7 +34,7 @@ env:
 jobs:
   # First job: Build the application and create artifacts
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # Output the package path for other jobs to use
     outputs:
       package-path: ${{ steps.publish.outputs.package-path }}
@@ -89,7 +89,7 @@ jobs:
   deploy-staging:
     # Wait for build job to complete before starting
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # Only deploy on main/master branch pushes (not on PRs)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     # Use staging environment for approval workflows
@@ -118,7 +118,7 @@ jobs:
   deploy-production:
     # Wait for build job to complete before starting
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # Only deploy on main/master branch pushes (not on PRs)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     # Use production environment for approval workflows
