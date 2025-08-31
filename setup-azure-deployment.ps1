@@ -282,18 +282,38 @@ if (Test-Path $advancedWorkflowPath) {
     Write-Host "Warning: $advancedWorkflowPath not found" -ForegroundColor Yellow
 }
 
-# Completion
+# Completion with clipboard functionality
 Write-Host "Setup Complete!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
 Write-Host "Your Azure Web App has been created successfully!" -ForegroundColor White
 
 Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Copy the content of publish-profile.xml" -ForegroundColor White
-Write-Host "2. Go to your GitHub repository - Settings - Secrets - Actions" -ForegroundColor White
-Write-Host "3. Add a new secret named AZURE_WEBAPP_PUBLISH_PROFILE" -ForegroundColor White
-Write-Host "4. Paste the publish profile content as the value" -ForegroundColor White
-Write-Host "5. ✅ Workflow files have been automatically updated with Web App name: $WebAppName" -ForegroundColor Green
-Write-Host "6. Push your changes to trigger the deployment!" -ForegroundColor White
+
+# Step 1: Copy secret name to clipboard
+Write-Host "1. Copying secret name to clipboard..." -ForegroundColor Yellow
+$secretName = "AZURE_WEBAPP_PUBLISH_PROFILE"
+Set-Clipboard -Value $secretName
+Write-Host "   ✅ Secret name copied to clipboard: $secretName" -ForegroundColor Green
+Write-Host "   📋 Go to GitHub → Settings → Secrets → Actions → New repository secret" -ForegroundColor White
+Write-Host "   📋 In the 'Name' field, just paste (Ctrl+V) - the secret name is already in your clipboard" -ForegroundColor White
+Write-Host "   📋 Press Enter when ready for the next step..." -ForegroundColor Cyan
+Read-Host
+
+# Step 2: Copy publish profile content to clipboard
+Write-Host "2. Copying publish profile content to clipboard..." -ForegroundColor Yellow
+if (Test-Path "publish-profile.xml") {
+    $publishContent = Get-Content "publish-profile.xml" -Raw
+    Set-Clipboard -Value $publishContent
+    Write-Host "   ✅ Publish profile content copied to clipboard!" -ForegroundColor Green
+    Write-Host "   📋 In the 'Value' field, just paste (Ctrl+V) - the content is already in your clipboard" -ForegroundColor White
+    Write-Host "   📋 Click 'Add secret'" -ForegroundColor White
+} else {
+    Write-Host "   ❌ publish-profile.xml not found!" -ForegroundColor Red
+    Write-Host "   📋 Please manually copy the content from publish-profile.xml" -ForegroundColor Yellow
+}
+
+Write-Host "3. ✅ Workflow files have been automatically updated with Web App name: $WebAppName" -ForegroundColor Green
+Write-Host "4. Push your changes to trigger the deployment!" -ForegroundColor White
 
 Write-Host "Useful Links:" -ForegroundColor Cyan
 Write-Host "Azure Portal: https://portal.azure.com" -ForegroundColor White
