@@ -53,11 +53,15 @@ jobs:
 
     # Step 3: Restore NuGet packages and dependencies
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        # Clear any existing NuGet cache
+        dotnet nuget locals all --clear
+        # Restore packages
+        dotnet restore --force
 
     # Step 4: Build the application in Release configuration
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore --verbosity normal
 
     # Step 5: Run tests with code coverage collection
     - name: Run tests
