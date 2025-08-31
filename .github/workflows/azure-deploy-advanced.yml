@@ -53,15 +53,21 @@ jobs:
 
     # Step 3: Restore NuGet packages and dependencies
     - name: Restore dependencies
+      env:
+        NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       run: |
         # Clear any existing NuGet cache
         dotnet nuget locals all --clear
+        # Set up NuGet environment
+        mkdir -p $NUGET_PACKAGES
         # Restore packages
-        dotnet restore --force
+        dotnet restore --force --packages $NUGET_PACKAGES
 
     # Step 4: Build the application in Release configuration
     - name: Build
-      run: dotnet build --configuration Release --no-restore --verbosity normal
+      env:
+        NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      run: dotnet build --configuration Release --no-restore --verbosity normal --packages $NUGET_PACKAGES
 
     # Step 5: Run tests with code coverage collection
     - name: Run tests
