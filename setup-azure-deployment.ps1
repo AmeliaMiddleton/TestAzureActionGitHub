@@ -255,11 +255,8 @@ $basicWorkflowPath = ".github/workflows/azure-deploy.yml"
 if (Test-Path $basicWorkflowPath) {
     try {
         $content = Get-Content $basicWorkflowPath -Raw
-        # Replace various placeholder patterns with the actual Web App name
-        $updatedContent = $content -replace 'AZURE_WEBAPP_NAME: your-actual-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-azure-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: myapp-centralus', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: examplescriptazureapp', "AZURE_WEBAPP_NAME: $WebAppName"
+        # Replace whatever is currently after AZURE_WEBAPP_NAME: with the new Web App name
+        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*).*', "`$1$WebAppName"
         Set-Content $basicWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $basicWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
     } catch {
@@ -274,12 +271,8 @@ $advancedWorkflowPath = ".github/workflows/azure-deploy-advanced.yml"
 if (Test-Path $advancedWorkflowPath) {
     try {
         $content = Get-Content $advancedWorkflowPath -Raw
-        # Replace various placeholder patterns with the actual Web App name
-        $updatedContent = $content -replace 'AZURE_WEBAPP_NAME: your-actual-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-staging-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-production-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: myapp-centralus', "AZURE_WEBAPP_NAME: $WebAppName"
-        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: examplescriptazureapp', "AZURE_WEBAPP_NAME: $WebAppName"
+        # Replace whatever is currently after AZURE_WEBAPP_NAME: with the new Web App name
+        $updatedContent = $content -replace '(AZURE_WEBAPP_NAME:\s*).*', "`$1$WebAppName"
         Set-Content $advancedWorkflowPath $updatedContent -Encoding UTF8
         Write-Host "Updated $advancedWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
     } catch {
