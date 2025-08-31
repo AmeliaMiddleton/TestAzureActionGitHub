@@ -169,8 +169,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Configuring Web App..." -ForegroundColor Yellow
-# Use PowerShell's escape character for the pipe
-az webapp config set --resource-group $ResourceGroupName --name $WebAppName --startup-file "dotnet TestAzureActionGithub.dll" --windows-fx-version "DOTNET^|8.0"
+# Set the startup file
+az webapp config set --resource-group $ResourceGroupName --name $WebAppName --startup-file "dotnet TestAzureActionGithub.dll"
+
+# Set the .NET framework version to 8.0
+az webapp config set --resource-group $ResourceGroupName --name $WebAppName --net-framework-version "v8.0"
+
+# Set the Windows runtime stack using Start-Process to avoid pipe character issues
+$runtimeArgs = @("webapp", "config", "set", "--resource-group", $ResourceGroupName, "--name", $WebAppName, "--windows-fx-version", "DOTNET|8.0")
+Start-Process -FilePath "az" -ArgumentList $runtimeArgs -Wait -NoNewWindow
 
 # Get publish profile
 Write-Host "Getting publish profile..." -ForegroundColor Yellow
