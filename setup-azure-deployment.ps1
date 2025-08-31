@@ -247,6 +247,48 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Failed to get publish profile" -ForegroundColor Red
 }
 
+# Update workflow files with the new Web App name
+Write-Host "Updating workflow files..." -ForegroundColor Yellow
+
+# Update basic workflow file
+$basicWorkflowPath = ".github/workflows/azure-deploy.yml"
+if (Test-Path $basicWorkflowPath) {
+    try {
+        $content = Get-Content $basicWorkflowPath -Raw
+        # Replace various placeholder patterns with the actual Web App name
+        $updatedContent = $content -replace 'AZURE_WEBAPP_NAME: your-actual-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-azure-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: myapp-centralus', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: examplescriptazureapp', "AZURE_WEBAPP_NAME: $WebAppName"
+        Set-Content $basicWorkflowPath $updatedContent -Encoding UTF8
+        Write-Host "Updated $basicWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
+    } catch {
+        Write-Host "Warning: Could not update $basicWorkflowPath" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Warning: $basicWorkflowPath not found" -ForegroundColor Yellow
+}
+
+# Update advanced workflow file
+$advancedWorkflowPath = ".github/workflows/azure-deploy-advanced.yml"
+if (Test-Path $advancedWorkflowPath) {
+    try {
+        $content = Get-Content $advancedWorkflowPath -Raw
+        # Replace various placeholder patterns with the actual Web App name
+        $updatedContent = $content -replace 'AZURE_WEBAPP_NAME: your-actual-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-staging-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: your-production-webapp-name', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: myapp-centralus', "AZURE_WEBAPP_NAME: $WebAppName"
+        $updatedContent = $updatedContent -replace 'AZURE_WEBAPP_NAME: examplescriptazureapp', "AZURE_WEBAPP_NAME: $WebAppName"
+        Set-Content $advancedWorkflowPath $updatedContent -Encoding UTF8
+        Write-Host "Updated $advancedWorkflowPath with Web App name: $WebAppName" -ForegroundColor Green
+    } catch {
+        Write-Host "Warning: Could not update $advancedWorkflowPath" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Warning: $advancedWorkflowPath not found" -ForegroundColor Yellow
+}
+
 # Completion
 Write-Host "Setup Complete!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
@@ -257,7 +299,7 @@ Write-Host "1. Copy the content of publish-profile.xml" -ForegroundColor White
 Write-Host "2. Go to your GitHub repository - Settings - Secrets - Actions" -ForegroundColor White
 Write-Host "3. Add a new secret named AZURE_WEBAPP_PUBLISH_PROFILE" -ForegroundColor White
 Write-Host "4. Paste the publish profile content as the value" -ForegroundColor White
-Write-Host "5. Update the workflow files with your Web App name: $WebAppName" -ForegroundColor White
+Write-Host "5. ✅ Workflow files have been automatically updated with Web App name: $WebAppName" -ForegroundColor Green
 Write-Host "6. Push your changes to trigger the deployment!" -ForegroundColor White
 
 Write-Host "Useful Links:" -ForegroundColor Cyan
