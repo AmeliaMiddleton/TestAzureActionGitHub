@@ -1,6 +1,5 @@
-﻿# Advanced deployment workflow with multi-environment support
-# This workflow builds once and deploys to both staging and production environments
-# It includes artifact management and deployment validation
+﻿# Advanced deployment workflow with single deployment slot
+# This workflow builds once and deploys to the main Azure Web App slot
 name: Advanced Azure Deployment
 
 # Define when this workflow should run
@@ -11,23 +10,14 @@ on:
   # Trigger on pull requests for validation
   pull_request:
     branches: [ main, master ]
-  # Allow manual triggering with environment selection
+  # Allow manual triggering
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-        - staging
-        - production
 
 # Environment variables for the workflow
 env:
   # .NET version to use for building
   DOTNET_VERSION: '8.0.100'
-  # Your Azure Web App name (using the same one for both staging and production for now)
+  # Your Azure Web App name
   AZURE_WEBAPP_NAME: testwebapp-8-31-2025-4-01
 
 # Define the jobs that will run in this workflow
@@ -85,17 +75,15 @@ jobs:
         # Path to the published application
         path: ./publish
 
-  # Second job: Deploy to staging environment
-  deploy-staging:
+  # Second job: Deploy to Azure Web App
+  deploy:
     # Wait for build job to complete before starting
     needs: build
     runs-on: windows-latest
     # Only deploy on main/master branch pushes (not on PRs)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    # Use staging environment for approval workflows
-    environment: staging
     
-    # Define the staging deployment steps
+    # Define the deployment steps
     steps:
     # Step 1: Download the build artifacts from the build job
     - name: Download build artifacts
@@ -103,8 +91,8 @@ jobs:
       with:
         name: webapp-${{ github.sha }}
 
-    # Step 2: Deploy the application to Azure staging environment
-    - name: Deploy to Staging
+    # Step 2: Deploy the application to Azure Web App
+    - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         # Name of your Azure Web App
@@ -114,41 +102,12 @@ jobs:
         # Secret containing Azure publish profile
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
-  # Third job: Deploy to production environment
-  deploy-production:
-    # Wait for build job to complete before starting
-    needs: build
-    runs-on: windows-latest
-    # Only deploy on main/master branch pushes (not on PRs)
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    # Use production environment for approval workflows
-    environment: production
-    
-    # Define the production deployment steps
-    steps:
-    # Step 1: Download the build artifacts from the build job
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: webapp-${{ github.sha }}
-
-    # Step 2: Deploy the application to Azure production environment
-    - name: Deploy to Production
-      uses: azure/webapps-deploy@v3
-      with:
-        # Name of your Azure Web App
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        # Deploy the downloaded artifacts
-        package: .
-        # Secret containing Azure publish profile
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-
-  # Fourth job: Notify deployment status and validate results
+  # Third job: Notify deployment status
   notify:
-    # Wait for both deployment jobs to complete
-    needs: [deploy-staging, deploy-production]
+    # Wait for deployment job to complete
+    needs: deploy
     runs-on: ubuntu-latest
-    # Always run this job, even if deployments fail
+    # Always run this job, even if deployment fails
     if: always()
     
     # Define the notification steps
@@ -156,11 +115,11 @@ jobs:
     # Step 1: Check deployment status and provide feedback
     - name: Notify deployment status
       run: |
-        # Check if both staging and production deployments succeeded
-        if [ "${{ needs.deploy-staging.result }}" == "success" ] && [ "${{ needs.deploy-production.result }}" == "success" ]; then
-          echo "âœ… All deployments successful!"
+        # Check if deployment succeeded
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "✅ Deployment successful!"
         else
-          echo "âŒ Some deployments failed"
+          echo "❌ Deployment failed"
           # Exit with error code to mark workflow as failed
           exit 1
         fi
