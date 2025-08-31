@@ -20,14 +20,14 @@ env:
   # Path where the published application will be stored
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   # .NET version to use for building and testing
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '8.0.100'
 
 # Define the jobs that will run in this workflow
 jobs:
   # Main job that builds and deploys the application
   build-and-deploy:
-    # Use Ubuntu latest runner for consistent build environment
-    runs-on: ubuntu-latest
+    # Use Windows latest runner for consistent build environment
+    runs-on: windows-latest
     
     # Define the steps to execute in sequence
     steps:
@@ -45,6 +45,8 @@ jobs:
     # This ensures code quality before deployment
     - name: Build with dotnet
       run: |
+        # Restore packages first
+        dotnet restore
         # Build the application in Release configuration for production
         dotnet build --configuration Release --no-restore
         # Run all tests to ensure no regressions
