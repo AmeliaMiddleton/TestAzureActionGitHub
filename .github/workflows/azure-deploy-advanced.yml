@@ -18,7 +18,7 @@ env:
   # .NET version to use for building
   DOTNET_VERSION: '8.0.100'
   # Your Azure Web App name
-  AZURE_WEBAPP_NAME: testwebapp-8-31-2025-4-01
+  AZURE_WEBAPP_NAME: testapp083122025
 
 # Define the jobs that will run in this workflow
 jobs:
@@ -125,4 +125,5 @@ jobs:
           # Exit with error code to mark workflow as failed
           exit 1
         fi
+
 
