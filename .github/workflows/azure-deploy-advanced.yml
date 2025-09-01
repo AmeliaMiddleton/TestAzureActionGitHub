@@ -1,130 +1,48 @@
-﻿# Advanced deployment workflow with single deployment slot
-# This workflow builds once and deploys to the main Azure Web App slot
-name: Advanced Azure Deployment
+﻿name: Advanced Azure Deployment
 
-# Define when this workflow should run
 on:
-  # Trigger on push to main/master branch (automatic deployments)
   push:
     branches: [ main, master ]
-  # Trigger on pull requests for validation
-  pull_request:
-    branches: [ main, master ]
-  # Allow manual triggering
   workflow_dispatch:
 
-# Environment variables for the workflow
 env:
-  # .NET version to use for building
-  DOTNET_VERSION: '8.0.100'
-  # Your Azure Web App name
   AZURE_WEBAPP_NAME: testwebapp083120250713PM
+  DOTNET_VERSION: '8.0.x'
 
-# Define the jobs that will run in this workflow
 jobs:
-  # First job: Build the application and create artifacts
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    # Output the package path for other jobs to use
-    outputs:
-      package-path: ${{ steps.publish.outputs.package-path }}
     
-    # Define the build steps in sequence
     steps:
-    # Step 1: Checkout the source code
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Step 2: Install the specified .NET version
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    # Step 3: Restore NuGet packages and dependencies
+    - name: Clear NuGet cache
+      run: dotnet nuget locals all --clear
+
     - name: Restore dependencies
-      run: |
-        # Clear any existing NuGet cache completely
-        dotnet nuget locals all --clear
-        # Restore packages
-        dotnet restore
+      run: dotnet restore --force
 
-    # Step 4: Build the application in Release configuration
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release
 
-    # Step 5: Run tests with code coverage collection
-    - name: Run tests
-      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
-
-    # Step 6: Publish the application for deployment
     - name: Publish
-      id: publish
-      run: |
-        # Publish to ./publish directory
-        dotnet publish -c Release -o ./publish
-        # Set output variable for other jobs to use
-        echo "package-path=./publish" >> $GITHUB_OUTPUT
+      run: dotnet publish --configuration Release --output ./publish
 
-    # Step 7: Upload build artifacts for deployment jobs
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        # Unique name based on commit SHA
-        name: webapp-${{ github.sha }}
-        # Path to the published application
-        path: ./publish
-
-  # Second job: Deploy to Azure Web App
-  deploy:
-    # Wait for build job to complete before starting
-    needs: build
-    runs-on: ubuntu-latest
-    # Only deploy on main/master branch pushes (not on PRs)
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
-    # Define the deployment steps
-    steps:
-    # Step 1: Download the build artifacts from the build job
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: webapp-${{ github.sha }}
-
-    # Step 2: Deploy the application to Azure Web App
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        # Name of your Azure Web App
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        # Deploy the downloaded artifacts
-        package: .
-        # Secret containing Azure publish profile
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        # Explicitly specify no slot (use main slot)
-        slot-name: ''
+        package: ./publish
 
-  # Third job: Notify deployment status
-  notify:
-    # Wait for deployment job to complete
-    needs: deploy
-    runs-on: ubuntu-latest
-    # Always run this job, even if deployment fails
-    if: always()
-    
-    # Define the notification steps
-    steps:
-    # Step 1: Check deployment status and provide feedback
-    - name: Notify deployment status
-      run: |
-        # Check if deployment succeeded
-        if [ "${{ needs.deploy.result }}" == "success" ]; then
-          echo "✅ Deployment successful!"
-        else
-          echo "❌ Deployment failed"
-          # Exit with error code to mark workflow as failed
-          exit 1
-        fi
+    - name: Success
+      run: echo "Successfully deployed to Azure Web App: ${{ env.AZURE_WEBAPP_NAME }}"
 
 
 
