@@ -151,7 +151,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Creating App Service Plan ($Sku)..." -ForegroundColor Yellow
-az appservice plan create --name "$WebAppName-plan" --resource-group $ResourceGroupName --location $Location --sku $Sku
+az appservice plan create --name "$WebAppName-plan" --resource-group $ResourceGroupName --location $Location --sku $Sku --is-linux
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to create App Service Plan" -ForegroundColor Red
@@ -161,7 +161,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Creating Linux Web App..." -ForegroundColor Yellow
-az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName --runtime "dotnet:8"
+az webapp create --resource-group $ResourceGroupName --plan "$WebAppName-plan" --name $WebAppName --runtime "DOTNETCORE:8.0"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to create Web App" -ForegroundColor Red
